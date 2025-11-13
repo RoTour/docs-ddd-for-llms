@@ -46,4 +46,12 @@ To send Events to remote Bounded Contexts, the Domain Event Service transitions 
     *   **Messaging Middleware:** Utilizing a mechanism like RabbitMQ's fanout exchange, often managed by a recurring timer. This push model requires handling potential message de-duplication at the receiver end.
     *   **RESTful Resources:** Publishing notifications as log resources (e.g., current log and archived logs) that external clients can query (pull model).
 
+### 4. Application Services (Forwarding and Transaction Management)
+
+The Application Layer, specifically through Application Services or related components, plays a crucial role immediately after the event is published locally.
+• Subscription: Application Services are typically the components that register subscribers with the DomainEventPublisher before invoking the Event-generating behavior on the Aggregate.
+• Transaction Control: Since Application Services manage the transaction scope, the local subscribers registered within the Application Service transaction handle the immediate next steps, such as storing or forwarding the event.
+• External Communication: The Application Service, or components within the Application Layer (like a dedicated NotificationService), is responsible for taking the locally published event and forwarding it to remote Bounded Contexts using external messaging infrastructure or RESTful notification resources. This process is considered an application concern, not a domain concern.
+The goal of this layered approach is to maintain a clean separation of concerns: the domain model (Aggregate) handles the business behavior and declares that a significant event occurred, while the Application Layer handles the logistical task of ensuring that all interested parties (local and remote) are notified
+
 This layered design ensures that the Domain Layer (where the `DomainEventPublisher` lives) remains pure and decoupled from the technical Infrastructure Layer (where the Event Store and messaging systems reside).
